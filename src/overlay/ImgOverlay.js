@@ -70,7 +70,7 @@ export default class ImgOverlay extends Parameter {
                 img = style.icon;
             }
 
-            //img  Not Loaded return 
+            //img  Not Loaded return
             if (!img) break;
             if (style.width && style.height) {
                 let xy = this._getDrawXY(pixel, style.offsets.left, style.offsets.top, style.width, style.height, 1);
@@ -171,7 +171,7 @@ export default class ImgOverlay extends Parameter {
     }
     /**
      * 根据用户配置，设置用户绘画样式
-     * @param {*} item 
+     * @param {*} item
      */
     _setDrawStyle(item, i) {
         let normal = this._styleConfig.normal; //正常样式
@@ -217,6 +217,13 @@ export default class ImgOverlay extends Parameter {
                     } else {
                         let xy = this._getDrawXY(pixel, style.offsets.left, style.offsets.top, img.width, img.height, 1);
                         this._drawImage(this._ctx, img, xy.x, xy.y, img.width, img.height);
+                    }
+                    if(style.label.show){
+                        this._ctx.font = style.label.font;
+                        this._ctx.fillStyle = style.label.color;
+                        let width = this._ctx.measureText(item.name).width;
+                        let offsets = style.label.offsets;
+                        this._ctx.fillText(item.name, pixel.x - width/2 + offsets.left, pixel.y + parseInt(style.label.font)/2 + offsets.top);
                     }
                 });
             }
