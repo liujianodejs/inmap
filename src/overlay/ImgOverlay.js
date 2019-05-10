@@ -223,7 +223,7 @@ export default class ImgOverlay extends Parameter {
                         this._ctx.fillStyle = style.label.color;
                         let width = this._ctx.measureText(item.name).width;
                         let offsets = style.label.offsets;
-                        this._ctx.fillText(item.name, pixel.x - width/2 + offsets.left, pixel.y + parseInt(style.label.font)/2 + offsets.top);
+                        this._ctx.fillText(item.name, pixel.x - width/2 + offsets.left, pixel.y + parseInt(style.label.font,10)/2 + offsets.top);
                     }
                 });
             }
