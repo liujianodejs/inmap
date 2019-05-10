@@ -67,12 +67,21 @@
                     top: "-100%",
                     left: "-50%",
                 },
+
+            },
+            mouseOver: {
+                icon: img,
+                width: 80,
+                height: 80,
+                offsets: {
+                    top: "-100%",
+                    left: "-50%",
+                },
                 label: {
-                    show: true,
-                    font: '12px bold ',
+                    font: '14px bold ',
                     color: '#fff',
                     offsets: {
-                        top: -22,
+                        top: -44,
                         left: 0
                     }
                 },
@@ -116,6 +125,18 @@
                     icon: img,
                 }
             ],
+        },
+        event: {
+            onMouseClick: function (item) {
+                //能获取当前点的信息
+                console.log(item,11111);
+            },
+            onMouseOver:function(item,event,overlay){
+                // console.log(item,event,overlay);
+            },
+            onState(state) {
+                console.log(state);
+            }
         },
         data: data
     });

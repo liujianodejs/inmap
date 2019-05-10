@@ -106,10 +106,11 @@ export default class ImgOverlay extends Parameter {
         let index = -1;
         if (item) {
             index = this._selectItem.findIndex(function (val) {
-                return val && val.lat == item.lat && val.lng == item.lng;
+                let itemCoordinates = item.geometry.coordinates;
+                let valCoordinates = val.geometry.coordinates;
+                return val && itemCoordinates[0] == valCoordinates[0] && itemCoordinates[1] == valCoordinates[1] && val.count == item.count;
             });
         }
-
         return index;
     }
     refresh() {
@@ -169,45 +170,12 @@ export default class ImgOverlay extends Parameter {
             y: y
         };
     }
-    /**
-     * 根据用户配置，设置用户绘画样式
-     * @param {*} item
-     */
-    _setDrawStyle(item, i) {
-        let normal = this._styleConfig.normal; //正常样式
-        let result = merge({}, normal);
-        let count = parseFloat(item.count);
-
-        //区间样式
-        let splitList = this._styleConfig.splitList,
-            len = splitList.length;
-        len = splitList.length;
-        if (len > 0 && typeOf(count) !== 'number') {
-            throw new TypeError(`inMap: data index Line ${i}, The property count must be of type Number! about geoJSON, visit http://inmap.talkingdata.com/#/docs/v2/Geojson`);
-        }
-        for (let i = 0; i < len; i++) {
-            let condition = splitList[i];
-            if (condition.end == null) {
-                if (count >= condition.start) {
-                    Object.assign(result, normal, condition);
-                    break;
-                }
-            } else if (count >= condition.start && count < condition.end) {
-                Object.assign(result, normal, condition);
-                break;
-            }
-        }
-
-
-        return result;
-
-    }
     _loopDraw(ctx, pixels) {
         let mapSize = this._map.getSize();
         for (let i = 0, len = pixels.length; i < len; i++) {
             let item = pixels[i];
             let pixel = item.geometry.pixel;
-            let style = this._setDrawStyle(item, i);
+            let style = this._setDrawStyle(item, true, i);
             if (pixel.x > -style.width && pixel.y > -style.height && pixel.x < mapSize.width + style.width && pixel.y < mapSize.height + style.height) {
                 this._loadImg(style.icon, (img) => {
                     if (style.width && style.height) {
