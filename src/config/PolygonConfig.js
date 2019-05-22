@@ -23,8 +23,11 @@ export default {
         normal: {
             backgroundColor: 'rgba(0,133,235,0.6)',
             borderWidth: 1.5,
+            borderStyle: 'solid',
             label: {
                 enable: true,
+                overflow: 'hidden',  // hidden visible  
+                centerType: 'cell', //cell  minMax
                 show: true,
                 font: '13px bold ',
                 color: '#fff'

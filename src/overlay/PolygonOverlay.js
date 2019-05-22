@@ -14,7 +14,7 @@ export default class PolygonOverlay extends Parameter {
         this._state = null;
         this._customZoom = null;
         if (!this._styleConfig.isHighlight) {
-            this._swopData = () => {};
+            this._swopData = () => { };
         }
     }
     _parameterInit() {
@@ -207,6 +207,7 @@ export default class PolygonOverlay extends Parameter {
         let parameter = {
             data: this._getTransformData(),
             enable: this._styleConfig.normal.label.enable,
+            centerType: this._styleConfig.normal.label.centerType,
             customZoom: this._customZoom
         };
 
@@ -300,6 +301,14 @@ export default class PolygonOverlay extends Parameter {
         for (let j = 0; j < pixels.length; j++) {
             this._ctx.save();
             this._ctx.beginPath();
+            if (style.borderStyle == 'dashed') {
+                if (style.dashed) {
+                    this._ctx.setLineDash(style.dashed);
+                } else {
+                    this._ctx.setLineDash([style.borderWidth * 10, style.borderWidth * 3]);
+                }
+            }
+
             let pixelItem = pixels[j];
             if (j == 0) {
                 this._drawData(pixelItem);
@@ -358,8 +367,9 @@ export default class PolygonOverlay extends Parameter {
                 this._ctx.fillStyle = style.label.color;
                 for (let j = 0; j < labelPixels.length; j++) {
                     let bestCell = labelPixels[j];
+
                     this._ctx.beginPath();
-                    let width = this._ctx.measureText(item.name).width;
+
                     if (geometry.type == 'MultiPolygon') {
                         let maxPixels = [];
                         for (let k = 0; k < pixels.length; k++) {
@@ -368,24 +378,51 @@ export default class PolygonOverlay extends Parameter {
                                 maxPixels = item;
                                 bestCell = labelPixels[k];
                             }
-                            item = null;
                         }
-                        if (bestCell && item.name && this._getMaxWidth(maxPixels) > width) {
-                            this._ctx.fillText(item.name, bestCell.x - width / 2, bestCell.y);
-                        }
-                        maxPixels = null;
-                    } else {
-                        if (bestCell && item.name && this._getMaxWidth(pixels[j]) > width) {
-                            this._ctx.fillText(item.name, bestCell.x - width / 2, bestCell.y);
-                        }
-                    }
+                        this._drawLabel(bestCell, item, maxPixels, style);
 
-                    bestCell = null, width = null;
+                    } else {
+                        this._drawLabel(bestCell, item, pixels[j], style);
+                    }
                 }
-                labelPixels = null;
+            }
+        }
+    }
+    _compileTooltipTemplate(formatter) {
+        //语法解析 先暂时不支持ie11
+        let RexStr = /\{|\}/g;
+        formatter = formatter.replace(RexStr, function (MatchStr) {
+            switch (MatchStr) {
+                case '{':
+                    return 'overItem.';
+                case '}':
+                    return '';
+                default:
+                    break;
+            }
+        });
+        return new Function('overItem', 'return ' + formatter);
+    }
+    _drawLabel(bestCell, item, pixels, style) {
+        let text = item.name;
+
+        if (style.label.formatter) {
+            text = this._compileTooltipTemplate(style.label.formatter)(item);
+        }
+
+        const width = this._ctx.measureText(text).width;
+        if (bestCell && text != null) {
+
+            if (style.label.overflow == 'hidden') {
+
+                if (this._getMaxWidth(pixels) > width) {
+                    this._ctx.fillText(text, bestCell.x - width / 2, bestCell.y);
+                }
+
+            } else {
+                this._ctx.fillText(text, bestCell.x - width / 2, bestCell.y);
             }
 
         }
-
     }
 }

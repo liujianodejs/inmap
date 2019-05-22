@@ -184,10 +184,22 @@ export default class LineStringOverlay extends Parameter {
 
         for (let i = 0; i < data.length; i++) {
             let item = data[i];
+
             let style = this._setDrawStyle(item, otherMode, i);
             ctx.strokeStyle = style.borderColor;
             let pixels = item.geometry.pixels;
+            if (pixels.length == 0) {
+                continue;
+            }
             ctx.beginPath();
+            if (style.borderStyle == 'dashed') {
+                if (style.dashed) {
+                    ctx.setLineDash(style.dashed);
+                } else {
+                    ctx.setLineDash([normal.borderWidth * 10, normal.borderWidth * 3]);
+                }
+
+            }
             ctx.moveTo(pixels[0][0], pixels[0][1]);
             for (let j = 1; j < pixels.length; j++) {
                 ctx.lineTo(pixels[j][0], pixels[j][1]);

@@ -1,6 +1,7 @@
 import Parameter from './base/Parameter';
 import Config from '../config/LabelConfig';
 import State from './../config/OnStateConfig';
+import { isString } from './../common/Util';
 
 export default class LabelOverlay extends Parameter {
     constructor(opts) {
@@ -70,8 +71,9 @@ export default class LabelOverlay extends Parameter {
         for (let i = 0, len = data.length; i < len; i++) {
             let item = data[i];
             let pixel = item.geometry.pixel;
-            let x1 = pixel.x - pixel.width / 2;
-            let y1 = pixel.y;
+            let style = this._setDrawStyle(item, i);
+            let x1 = (pixel.x - pixel.width / 2) + style.offsets.left;
+            let y1 = pixel.y + style.offsets.top;
             if (this._isMouseOver(mouseX, mouseY, x1, y1, pixel.width, pixel.height)) {
                 return {
                     index: i,
@@ -134,9 +136,21 @@ export default class LabelOverlay extends Parameter {
                 pixel['width'] = byteWidth;
                 pixel['height'] = parseInt(style.font);
             }
-
+            let left = 0;
+            
+            if (isString(style.offsets.left)) {
+                const leftStr = style.offsets.left;
+                if (leftStr.substr(leftStr.length - 1, 1) == '%') {
+                    const width = ctx.measureText(item.name).width;
+                    left = parseInt(parseInt(leftStr) * width / 100, 10);
+                }
+            } else {
+                left = style.offsets.left || 0;
+            }
+            const x = (pixel.x - pixel.width / 2) + left;
+            const y = pixel.y + style.offsets.top;
             ctx.beginPath();
-            ctx.fillText(item.name, pixel.x - byteWidth / 2 + style.offsets.left, pixel.y + parseInt(style.font,10) / 2 + style.offsets.top);
+            ctx.fillText(item.name, x, y);
             ctx.fill();
         }
     }
