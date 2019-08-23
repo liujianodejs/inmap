@@ -8,6 +8,7 @@ export default class ToolTip {
         this._dom = this._create(toolDom);
         this._tooltipTemplate = null;
         this._opts = {};
+        this.isShow = null;
         this.hide();
     }
     _create(toolDom) {
@@ -31,32 +32,35 @@ export default class ToolTip {
         });
         this._tooltipTemplate = new Function('overItem', 'return ' + formatter);
     }
-    show(x, y) {
+    show(x, y, text) {
         let {
             left,
             top
         } = this._opts.offsets;
+        this._dom.innerHTML = text;
         this._dom.style.left = x + left + 'px';
         this._dom.style.top = y + top + 'px';
-        this._dom.style.display = 'block';
+        this._show();
     }
-    showCenterText(text, x, y) {
-        this._dom.innerHTML = text;
-        this._dom.style.display = 'block';
-        this._dom.style.visibility = 'hidden';
-        let width = this._dom.offsetWidth;
-        this._dom.style.left = x - (width / 2) + 'px';
-        this._dom.style.top = y + 'px';
-        this._dom.style.visibility = 'visible';
-    }
+
     showText(text, x, y) {
         this._dom.innerHTML = text;
         this._dom.style.left = x + 'px';
         this._dom.style.top = y + 'px';
-        this._dom.style.display = 'block';
+        this._show();
+    }
+    _show() {
+        if (this.isShow != true) {
+            this.isShow = true;
+            this._dom.style.display = 'block';
+        }
     }
     hide() {
-        this._dom.style.display = 'none';
+        if (this.isShow != false) {
+            this.isShow = false;
+            this._dom.style.display = 'none';
+        }
+
     }
     setOption(opts) {
         let result = merge(this._opts, opts);
@@ -80,12 +84,13 @@ export default class ToolTip {
         if (!this._opts.show) return;
         if (overItem) {
             let formatter = this._opts.formatter;
+            let text = null;
             if (isFunction(formatter)) {
-                this._dom.innerHTML = formatter(overItem);
+                text = formatter(overItem);
             } else if (isString(formatter)) {
-                this._dom.innerHTML = this._tooltipTemplate(overItem);
+                text = this._tooltipTemplate(overItem);
             }
-            this.show(event.offsetX, event.offsetY);
+            this.show(event.offsetX, event.offsetY, text);
         } else {
             this.hide();
         }

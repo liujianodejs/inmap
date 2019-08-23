@@ -1,9 +1,7 @@
 import {
-
-    detectmob,
-
+    detection
 } from '../../common/Util';
-const isMobile = detectmob();
+const isMobile = detection();
 class EventManage {
     constructor() {
         this.map = null;
@@ -16,15 +14,19 @@ class EventManage {
         }
         if (!this.isContains(layer)) {
             this.layers.push(layer);
-
-            this.layers.sort((a, b) => {
-                return b._zIndex - a._zIndex;
-            });
-
+            this.sort();
         }
+    }
+    sort() {
+        this.layers.sort((a, b) => {
+            return b._zIndex - a._zIndex;
+        });
     }
     bindEvent() {
 
+        this.map.getContainer().addEventListener('mouseout', (e) => {
+            this.trigger('_tMouseout', e);
+        });
         this.map.addEventListener('mousemove', (e) => {
             this.trigger('_tMousemove', e);
         });
@@ -39,20 +41,22 @@ class EventManage {
         }
     }
     trigger(eventName, e) {
-
+        let lock = false;
         for (let index = 0; index < this.layers.length; index++) {
-            const item = this.layers[index];
-            if (item && item._map) {
+            const layer = this.layers[index];
+            if (layer && layer._map) {
                 if (eventName == '_tMousemove' || eventName == '_tMouseClick') {
-                    let reuslt = item[eventName](e);
-                    // console.log(this.layers);
-                    if (reuslt && reuslt.item) {
-
-                        // break;
+                    if (!lock) {
+                        let result = layer[eventName](e);
+                        if (result && result.item) {
+                            lock = true;
+                        }
+                    } else {
+                        layer['_tMouseout'](e);
                     }
 
                 } else {
-                    item[eventName](e);
+                    layer[eventName](e);
                 }
 
             } else {

@@ -10,15 +10,29 @@ import State from '../config/OnStateConfig.js';
 export default class PolygonOverlay extends Parameter {
     constructor(ops) {
         super(PolygonConfig, ops);
+        this._TRightClick = this._TRightClick.bind(this);
+        this._subscriptions = {
+            onMouseClick: [],
+            onMouseOver: [],
+            onMouseLeave: [],
+            onRightClick: [],
+            onState: [],
+            onInit: [],
+            isInit: true,
+            preEmitName: null
+        };
+
         this._patchSplitList();
         this._state = null;
         this._customZoom = null;
         if (!this._styleConfig.isHighlight) {
             this._swopData = () => { };
         }
+        this._bindEmit();
     }
     _parameterInit() {
         this._initLegend();
+        this._map.addEventListener('rightclick', this._TRightClick);
     }
     _initLegend() {
         const splitList = this._styleConfig.splitList;
@@ -26,7 +40,7 @@ export default class PolygonOverlay extends Parameter {
             this._compileSplitList(this._styleConfig.colors, this._getTransformData());
         }
         this._patchSplitList();
-        this._setlegend(this._legendConfig, this._styleConfig.splitList);
+        this._setLegend(this._legendConfig, this._styleConfig.splitList);
     }
 
     setCustomZoom(zoom) {
@@ -79,13 +93,10 @@ export default class PolygonOverlay extends Parameter {
         }
         this.refresh();
     }
-    setOptionStyle(ops) {
-        this._setStyle(this._option, ops);
+    setOptionStyle(ops, callback) {
+        this._setStyle(this._option, ops, callback);
     }
-    _setState(val) {
-        this._state = val;
-        this._eventConfig.onState(this._state, this);
-    }
+
     _onOptionChange() {
         this._map && this._initLegend();
     }
@@ -156,8 +167,8 @@ export default class PolygonOverlay extends Parameter {
         }
 
     }
-    _toDraw() {
-        this._drawMap();
+    _toDraw(callback) {
+        this._drawMap(callback);
     }
     _getGeoCenter(geo) {
         let minX = geo[0][0];
@@ -185,7 +196,16 @@ export default class PolygonOverlay extends Parameter {
         }
         return maxX - minX;
     }
+    _TRightClick(event) {
+        if (this._eventType == 'onmoving') return;
 
+        let result = this._getTarget(event.pixel.x, event.pixel.y);
+        if (result.index == -1) {
+            return;
+        }
+
+        this._emit('onRightClick', [result.item], event, this);
+    }
     _findIndexSelectItem(item) {
         let index = -1;
         if (item) {
@@ -202,10 +222,32 @@ export default class PolygonOverlay extends Parameter {
         this._drawPolygon(this.getRenderData());
         this._setState(State.drawAfter);
     }
-    _drawMap() {
+    _drawMap(callback) {
         this._setState(State.computeBefore);
         let parameter = {
             data: this._getTransformData(),
+            enable: this._styleConfig.normal.label.enable,
+            centerType: this._styleConfig.normal.label.centerType,
+            customZoom: this._customZoom
+        };
+        this._postMessage('PolygonOverlay.calculatePixel', parameter, (pixels, margin) => {
+            if (this._eventType == 'onmoving') {
+                return;
+            }
+            this._setWorkerData(pixels);
+            this._setState(State.computeAfter);
+            this._translation(margin.left - this._margin.left, margin.top - this._margin.top);
+            pixels = null, margin = null;
+            callback && callback(this);
+            this._emitInit();
+        });
+    }
+
+    pushData(data, callback) {
+        if (!Array.isArray(data)) return;
+        this._setState(State.computeBefore);
+        let parameter = {
+            data: data,
             enable: this._styleConfig.normal.label.enable,
             centerType: this._styleConfig.normal.label.centerType,
             customZoom: this._customZoom
@@ -215,10 +257,11 @@ export default class PolygonOverlay extends Parameter {
             if (this._eventType == 'onmoving') {
                 return;
             }
-            this._setWorkerData(pixels);
-            this._setState(State.conputeAfter);
+            this._workerData.push(...pixels);
+            this._setState(State.computeAfter);
             this._translation(margin.left - this._margin.left, margin.top - this._margin.top);
             pixels = null, margin = null;
+            callback && callback(this);
         });
     }
 
@@ -424,5 +467,8 @@ export default class PolygonOverlay extends Parameter {
             }
 
         }
+    }
+    _TDispose() {
+        this._map.removeEventListener('rightclick', this._TRightClick);
     }
 }

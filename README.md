@@ -12,6 +12,7 @@
 [![NPM downloads](https://img.shields.io/npm/dt/inmap.svg?style=flat-square)](https://npmjs.org/package/inmap)
 
 
+
 ## 介绍
 inMap 是一款基于百度地图的大数据可视化库，专注于大数据方向的散点、热力图、网格、聚合等方式展示，致力于让大数据可视化变得简单易用。
 
@@ -45,6 +46,7 @@ npm install inmap --save
 ```
 
 ## 示例
+
 ```html
 <script>
 var inmap = new inMap.Map({
@@ -60,19 +62,19 @@ var inmap = new inMap.Map({
 })
 </script>
 ```
+###### [examples](https://github.com/fengluhome/inMapWebApp)
+
 ## 预览当前项目所有demo
 ```shell
 # 从 GitHub 下载后，安装依赖
 npm install
 
 # 编译代码
-npm run dev
+npm run dev & npm run start
 
 在浏览器地址栏输入：http://localhost:8088/examples/index.html
 ```
-# 捐赠
-![image](http://ozjyavyki.bkt.clouddn.com/WX20180906-140345.png)
-![image](http://ozjyavyki.bkt.clouddn.com/inmap/WX20180906-125056.png)
+ 
 
 ## Major Contributors
 |Name|Avatar|
