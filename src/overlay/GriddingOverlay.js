@@ -17,7 +17,7 @@ export default class GriddingOverlay extends Parameter {
         this._setStyle(this._option, ops, callback);
     }
 
-    
+
     draw() {
         this._toDraw();
     }
@@ -45,7 +45,7 @@ export default class GriddingOverlay extends Parameter {
         }
     }
     /**
-     * 获得每个像素对应多少米	
+     * 获得每个像素对应多少米
      */
     _getMpp() {
         let mapCenter = this._map.getCenter();
@@ -246,6 +246,21 @@ export default class GriddingOverlay extends Parameter {
                 this._ctx.fillRect(x, y, gridStep - style.padding, gridStep - style.padding);
             }
 
+        }
+
+        if (style.label.show) {
+            // 重新循环一遍，让每个label 都在所有rect的上方
+            for (let i = 0; i < this._workerData.length; i++) {
+                let item = this._workerData[i];
+                let rectSize = gridStep - style.padding
+
+                this._ctx.font = style.label.font;
+                this._ctx.fillStyle = style.label.color;
+                let width = this._ctx.measureText(item.count).width;
+                const x = (item.x + rectSize/2 - width / 2) + style.label.offsets.left;
+                const y = (item.y + rectSize/2 + parseInt(style.label.font)/2) + style.label.offsets.top;
+                this._ctx.fillText(item.count.toFixed(0), x, y);
+            }
         }
     }
 }

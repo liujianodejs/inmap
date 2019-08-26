@@ -53,9 +53,20 @@
         style: {
             type: "sum",
             normal: {
-                size: 1000,
+                size: 10000,
                 unit: 'm', //地理属性单位，米
-                padding: 1
+                padding: 1,
+                label: {
+                    show: true, // 是否显示
+                    font: '12px sans-serif',
+                    shadowBlur: 0,
+                    lineWidth: 1,
+                    color: 'rgba(255,255,255,1)',
+                    offsets: {
+                        top: 0,
+                        left: 0
+                    }
+                },
             },
             colors: [
                 "rgba(31,98,1,1)",
